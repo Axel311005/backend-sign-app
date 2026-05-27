@@ -11,7 +11,22 @@ from model_service import ModelService, decode_base64_image
 
 
 BASE_DIR = Path(__file__).resolve().parent
-CODE_DIR = (BASE_DIR / ".." / "Code").resolve()
+
+
+def resolve_model_dir() -> Path:
+    env_dir = os.getenv("MODEL_DIR")
+    candidates = [
+        Path(env_dir) if env_dir else None,
+        BASE_DIR / "Code",
+        (BASE_DIR / ".." / "Code"),
+    ]
+    for candidate in candidates:
+        if candidate and candidate.exists():
+            return candidate.resolve()
+    return (BASE_DIR / "Code").resolve()
+
+
+CODE_DIR = resolve_model_dir()
 
 app = Flask(__name__)
 CORS(app, resources={r"/predict": {"origins": "*"}})
